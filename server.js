@@ -68,6 +68,87 @@ app.post('/envelopes', (req, res) => {
     res.status(201).json(newEnvelope);
 });
 
+// PUT endpoint to update a specific envelope
+app.put('/envelopes/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    // Validate ID is a number
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Find envelope by ID
+    const envelope = envelopes.find(env => env.id === id);
+
+    if (!envelope) {
+        return res.status(404).json({ error: 'Envelope not found' });
+    }
+
+    const { title, budget } = req.body;
+
+    // Validate at least one field is provided
+    if (title === undefined && budget === undefined) {
+        return res.status(400).json({ error: 'Title or budget must be provided' });
+    }
+
+    // Validate budget if provided
+    if (budget !== undefined) {
+        if (typeof budget !== 'number' || budget < 0) {
+            return res.status(400).json({ error: 'Budget must be a positive number' });
+        }
+
+        // Update total budget
+        totalBudget = totalBudget - envelope.budget + budget;
+        envelope.budget = budget;
+    }
+
+    // Update title if provided
+    if (title !== undefined) {
+        envelope.title = title;
+    }
+
+    res.status(200).json(envelope);
+});
+
+// POST endpoint to subtract money from an envelope
+app.post('/envelopes/:id/subtract', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    // Validate ID is a number
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Find envelope by ID
+    const envelope = envelopes.find(env => env.id === id);
+
+    if (!envelope) {
+        return res.status(404).json({ error: 'Envelope not found' });
+    }
+
+    const { amount } = req.body;
+
+    // Validate amount
+    if (amount === undefined) {
+        return res.status(400).json({ error: 'Amount is required' });
+    }
+
+    if (typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    // Check if sufficient funds
+    if (envelope.budget < amount) {
+        return res.status(400).json({ error: 'Insufficient funds in envelope' });
+    }
+
+    // Subtract amount from envelope and total budget
+    envelope.budget -= amount;
+    totalBudget -= amount;
+
+    res.status(200).json(envelope);
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
