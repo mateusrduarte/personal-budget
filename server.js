@@ -15,6 +15,14 @@ app.get('/', (req, res) => {
     res.send('Hello, World');
 });
 
+// GET endpoint to retrieve all envelopes
+app.get('/envelopes', (req, res) => {
+    res.status(200).json({
+        totalBudget: totalBudget,
+        envelopes: envelopes
+    });
+});
+
 // POST endpoint to create a new envelope
 app.post('/envelopes', (req, res) => {
     const { title, budget } = req.body;
