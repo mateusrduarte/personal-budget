@@ -174,6 +174,60 @@ app.delete('/envelopes/:id', (req, res) => {
     res.status(200).json({ message: 'Envelope deleted successfully', envelope: envelope });
 });
 
+// POST endpoint to transfer money between envelopes
+app.post('/envelopes/transfer/:from/:to', (req, res) => {
+    const fromId = parseInt(req.params.from);
+    const toId = parseInt(req.params.to);
+
+    // Validate IDs are numbers
+    if (isNaN(fromId) || isNaN(toId)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Check if trying to transfer to the same envelope
+    if (fromId === toId) {
+        return res.status(400).json({ error: 'Cannot transfer to the same envelope' });
+    }
+
+    // Find both envelopes
+    const fromEnvelope = envelopes.find(env => env.id === fromId);
+    const toEnvelope = envelopes.find(env => env.id === toId);
+
+    if (!fromEnvelope) {
+        return res.status(404).json({ error: 'Source envelope not found' });
+    }
+
+    if (!toEnvelope) {
+        return res.status(404).json({ error: 'Destination envelope not found' });
+    }
+
+    const { amount } = req.body;
+
+    // Validate amount
+    if (amount === undefined) {
+        return res.status(400).json({ error: 'Amount is required' });
+    }
+
+    if (typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    // Check if sufficient funds in source envelope
+    if (fromEnvelope.budget < amount) {
+        return res.status(400).json({ error: 'Insufficient funds in source envelope' });
+    }
+
+    // Transfer the amount
+    fromEnvelope.budget -= amount;
+    toEnvelope.budget += amount;
+
+    res.status(200).json({
+        message: 'Transfer successful',
+        from: fromEnvelope,
+        to: toEnvelope
+    });
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
