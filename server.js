@@ -5,9 +5,40 @@ const PORT = 3000;
 // Middleware to parse JSON
 app.use(express.json());
 
+// Global variables
+let envelopes = [];
+let totalBudget = 0;
+let nextId = 1;
+
 // Basic route
 app.get('/', (req, res) => {
     res.send('Hello, World');
+});
+
+// POST endpoint to create a new envelope
+app.post('/envelopes', (req, res) => {
+    const { title, budget } = req.body;
+
+    // Validation
+    if (!title || budget === undefined) {
+        return res.status(400).json({ error: 'Title and budget are required' });
+    }
+
+    if (typeof budget !== 'number' || budget < 0) {
+        return res.status(400).json({ error: 'Budget must be a positive number' });
+    }
+
+    // Create new envelope
+    const newEnvelope = {
+        id: nextId++,
+        title: title,
+        budget: budget
+    };
+
+    envelopes.push(newEnvelope);
+    totalBudget += budget;
+
+    res.status(201).json(newEnvelope);
 });
 
 // Start the server
