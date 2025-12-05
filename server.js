@@ -23,6 +23,25 @@ app.get('/envelopes', (req, res) => {
     });
 });
 
+// GET endpoint to retrieve a specific envelope by ID
+app.get('/envelopes/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    // Validate ID is a number
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Find envelope by ID
+    const envelope = envelopes.find(env => env.id === id);
+
+    if (!envelope) {
+        return res.status(404).json({ error: 'Envelope not found' });
+    }
+
+    res.status(200).json(envelope);
+});
+
 // POST endpoint to create a new envelope
 app.post('/envelopes', (req, res) => {
     const { title, budget } = req.body;
