@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Middleware
+// ============================================
+// MIDDLEWARE CONFIGURATION
+// ============================================
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -12,12 +14,52 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.static('public'));
 
-// Global variables
+// ============================================
+// DATA STORAGE
+// ============================================
 let envelopes = [];
 let totalBudget = 0;
 let nextId = 1;
 
-// GET endpoint to retrieve all envelopes
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Find an envelope by ID
+ * @param {number} id - Envelope ID
+ * @returns {Object|undefined} Envelope object or undefined
+ */
+function findEnvelopeById(id) {
+    return envelopes.find(env => env.id === id);
+}
+
+/**
+ * Validate if a value is a positive number
+ * @param {*} value - Value to validate
+ * @returns {boolean} True if valid positive number
+ */
+function isValidPositiveNumber(value) {
+    return typeof value === 'number' && value >= 0;
+}
+
+/**
+ * Validate if a value is a positive non-zero number
+ * @param {*} value - Value to validate
+ * @returns {boolean} True if valid positive non-zero number
+ */
+function isValidPositiveAmount(value) {
+    return typeof value === 'number' && value > 0;
+}
+
+// ============================================
+// ROUTES - ENVELOPE RETRIEVAL
+// ============================================
+
+/**
+ * GET /envelopes
+ * Retrieve all envelopes and total budget
+ */
 app.get('/envelopes', (req, res) => {
     res.status(200).json({
         totalBudget: totalBudget,
@@ -25,17 +67,18 @@ app.get('/envelopes', (req, res) => {
     });
 });
 
-// GET endpoint to retrieve a specific envelope by ID
+/**
+ * GET /envelopes/:id
+ * Retrieve a specific envelope by ID
+ */
 app.get('/envelopes/:id', (req, res) => {
     const id = parseInt(req.params.id);
 
-    // Validate ID is a number
     if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid ID format' });
     }
 
-    // Find envelope by ID
-    const envelope = envelopes.find(env => env.id === id);
+    const envelope = findEnvelopeById(id);
 
     if (!envelope) {
         return res.status(404).json({ error: 'Envelope not found' });
@@ -44,16 +87,24 @@ app.get('/envelopes/:id', (req, res) => {
     res.status(200).json(envelope);
 });
 
-// POST endpoint to create a new envelope
+// ============================================
+// ROUTES - ENVELOPE CREATION
+// ============================================
+
+/**
+ * POST /envelopes
+ * Create a new budget envelope
+ */
 app.post('/envelopes', (req, res) => {
     const { title, budget } = req.body;
 
-    // Validation
+    // Validate required fields
     if (!title || budget === undefined) {
         return res.status(400).json({ error: 'Title and budget are required' });
     }
 
-    if (typeof budget !== 'number' || budget < 0) {
+    // Validate budget value
+    if (!isValidPositiveNumber(budget)) {
         return res.status(400).json({ error: 'Budget must be a positive number' });
     }
 
@@ -70,17 +121,22 @@ app.post('/envelopes', (req, res) => {
     res.status(201).json(newEnvelope);
 });
 
-// PUT endpoint to update a specific envelope
+// ============================================
+// ROUTES - ENVELOPE UPDATES
+// ============================================
+
+/**
+ * PUT /envelopes/:id
+ * Update envelope title and/or budget
+ */
 app.put('/envelopes/:id', (req, res) => {
     const id = parseInt(req.params.id);
 
-    // Validate ID is a number
     if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid ID format' });
     }
 
-    // Find envelope by ID
-    const envelope = envelopes.find(env => env.id === id);
+    const envelope = findEnvelopeById(id);
 
     if (!envelope) {
         return res.status(404).json({ error: 'Envelope not found' });
@@ -93,13 +149,13 @@ app.put('/envelopes/:id', (req, res) => {
         return res.status(400).json({ error: 'Title or budget must be provided' });
     }
 
-    // Validate budget if provided
+    // Update budget if provided
     if (budget !== undefined) {
-        if (typeof budget !== 'number' || budget < 0) {
+        if (!isValidPositiveNumber(budget)) {
             return res.status(400).json({ error: 'Budget must be a positive number' });
         }
 
-        // Update total budget
+        // Adjust total budget
         totalBudget = totalBudget - envelope.budget + budget;
         envelope.budget = budget;
     }
@@ -112,17 +168,18 @@ app.put('/envelopes/:id', (req, res) => {
     res.status(200).json(envelope);
 });
 
-// POST endpoint to subtract money from an envelope
+/**
+ * POST /envelopes/:id/subtract
+ * Subtract money from an envelope (e.g., when spending)
+ */
 app.post('/envelopes/:id/subtract', (req, res) => {
     const id = parseInt(req.params.id);
 
-    // Validate ID is a number
     if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid ID format' });
     }
 
-    // Find envelope by ID
-    const envelope = envelopes.find(env => env.id === id);
+    const envelope = findEnvelopeById(id);
 
     if (!envelope) {
         return res.status(404).json({ error: 'Envelope not found' });
@@ -135,65 +192,80 @@ app.post('/envelopes/:id/subtract', (req, res) => {
         return res.status(400).json({ error: 'Amount is required' });
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (!isValidPositiveAmount(amount)) {
         return res.status(400).json({ error: 'Amount must be a positive number' });
     }
 
-    // Check if sufficient funds
+    // Check sufficient funds
     if (envelope.budget < amount) {
         return res.status(400).json({ error: 'Insufficient funds in envelope' });
     }
 
-    // Subtract amount from envelope and total budget
+    // Subtract amount
     envelope.budget -= amount;
     totalBudget -= amount;
 
     res.status(200).json(envelope);
 });
 
-// DELETE endpoint to remove a specific envelope
+// ============================================
+// ROUTES - ENVELOPE DELETION
+// ============================================
+
+/**
+ * DELETE /envelopes/:id
+ * Delete a specific envelope
+ */
 app.delete('/envelopes/:id', (req, res) => {
     const id = parseInt(req.params.id);
 
-    // Validate ID is a number
     if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid ID format' });
     }
 
-    // Find envelope by ID
-    const envelope = envelopes.find(env => env.id === id);
+    const envelope = findEnvelopeById(id);
 
     if (!envelope) {
         return res.status(404).json({ error: 'Envelope not found' });
     }
 
-    // Remove envelope from array using filter
+    // Remove envelope from array
     envelopes = envelopes.filter(env => env.id !== id);
 
     // Update total budget
     totalBudget -= envelope.budget;
 
-    res.status(200).json({ message: 'Envelope deleted successfully', envelope: envelope });
+    res.status(200).json({
+        message: 'Envelope deleted successfully',
+        envelope: envelope
+    });
 });
 
-// POST endpoint to transfer money between envelopes
+// ============================================
+// ROUTES - ENVELOPE TRANSFERS
+// ============================================
+
+/**
+ * POST /envelopes/transfer/:from/:to
+ * Transfer money between two envelopes
+ */
 app.post('/envelopes/transfer/:from/:to', (req, res) => {
     const fromId = parseInt(req.params.from);
     const toId = parseInt(req.params.to);
 
-    // Validate IDs are numbers
+    // Validate IDs
     if (isNaN(fromId) || isNaN(toId)) {
         return res.status(400).json({ error: 'Invalid ID format' });
     }
 
-    // Check if trying to transfer to the same envelope
+    // Prevent transfer to same envelope
     if (fromId === toId) {
         return res.status(400).json({ error: 'Cannot transfer to the same envelope' });
     }
 
     // Find both envelopes
-    const fromEnvelope = envelopes.find(env => env.id === fromId);
-    const toEnvelope = envelopes.find(env => env.id === toId);
+    const fromEnvelope = findEnvelopeById(fromId);
+    const toEnvelope = findEnvelopeById(toId);
 
     if (!fromEnvelope) {
         return res.status(404).json({ error: 'Source envelope not found' });
@@ -210,16 +282,16 @@ app.post('/envelopes/transfer/:from/:to', (req, res) => {
         return res.status(400).json({ error: 'Amount is required' });
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (!isValidPositiveAmount(amount)) {
         return res.status(400).json({ error: 'Amount must be a positive number' });
     }
 
-    // Check if sufficient funds in source envelope
+    // Check sufficient funds
     if (fromEnvelope.budget < amount) {
         return res.status(400).json({ error: 'Insufficient funds in source envelope' });
     }
 
-    // Transfer the amount
+    // Execute transfer
     fromEnvelope.budget -= amount;
     toEnvelope.budget += amount;
 
@@ -230,7 +302,10 @@ app.post('/envelopes/transfer/:from/:to', (req, res) => {
     });
 });
 
-// POST endpoint to distribute amount across multiple envelopes
+/**
+ * POST /envelopes/distribute
+ * Distribute a single amount across multiple envelopes by percentage
+ */
 app.post('/envelopes/distribute', (req, res) => {
     const { amount, distributions } = req.body;
 
@@ -239,7 +314,7 @@ app.post('/envelopes/distribute', (req, res) => {
         return res.status(400).json({ error: 'Amount is required' });
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (!isValidPositiveAmount(amount)) {
         return res.status(400).json({ error: 'Amount must be a positive number' });
     }
 
@@ -258,7 +333,7 @@ app.post('/envelopes/distribute', (req, res) => {
 
     // Distribute amount to each envelope
     for (const dist of distributions) {
-        const envelope = envelopes.find(env => env.id === dist.id);
+        const envelope = findEnvelopeById(dist.id);
 
         if (!envelope) {
             return res.status(404).json({ error: `Envelope with ID ${dist.id} not found` });
@@ -284,7 +359,9 @@ app.post('/envelopes/distribute', (req, res) => {
     });
 });
 
-// Start the server
+// ============================================
+// SERVER STARTUP
+// ============================================
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

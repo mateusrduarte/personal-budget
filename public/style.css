@@ -1,3 +1,6 @@
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
 * {
     margin: 0;
     padding: 0;
@@ -11,6 +14,9 @@ body {
     padding: 20px;
 }
 
+/* ============================================
+   LAYOUT
+   ============================================ */
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -20,12 +26,34 @@ body {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
+.section {
+    margin-bottom: 30px;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
 h1 {
     text-align: center;
     color: #333;
     margin-bottom: 30px;
+    font-size: 2rem;
 }
 
+h2 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.25rem;
+}
+
+/* ============================================
+   TOTAL BUDGET DISPLAY
+   ============================================ */
 .total-budget {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -35,31 +63,28 @@ h1 {
     margin-bottom: 30px;
 }
 
-.section {
-    margin-bottom: 30px;
-}
-
-h3 {
-    color: #667eea;
-    margin-bottom: 15px;
-}
-
+/* ============================================
+   FORMS
+   ============================================ */
 .form {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-input, select {
+input,
+select {
     flex: 1;
     min-width: 200px;
     padding: 12px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 14px;
+    transition: border-color 0.3s;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     outline: none;
     border-color: #667eea;
 }
@@ -69,6 +94,9 @@ select {
     cursor: pointer;
 }
 
+/* ============================================
+   BUTTONS
+   ============================================ */
 button {
     padding: 12px 24px;
     background: #667eea;
@@ -78,19 +106,40 @@ button {
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: background 0.3s;
+    transition: background 0.3s, transform 0.1s;
 }
 
 button:hover {
     background: #764ba2;
 }
 
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-delete {
+    background: #e74c3c;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+/* ============================================
+   ENVELOPE CARDS
+   ============================================ */
 .envelope-card {
     background: #f8f9fa;
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 15px;
     border-left: 5px solid #667eea;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.envelope-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .envelope-header {
@@ -128,14 +177,9 @@ button:hover {
     font-size: 12px;
 }
 
-.btn-delete {
-    background: #e74c3c;
-}
-
-.btn-delete:hover {
-    background: #c0392b;
-}
-
+/* ============================================
+   MODAL
+   ============================================ */
 .modal {
     display: none;
     position: fixed;
@@ -145,6 +189,16 @@ button:hover {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-content {
@@ -154,6 +208,18 @@ button:hover {
     border-radius: 15px;
     width: 80%;
     max-width: 500px;
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .close {
@@ -162,12 +228,17 @@ button:hover {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+    transition: color 0.3s;
 }
 
-.close:hover {
+.close:hover,
+.close:focus {
     color: #000;
 }
 
+/* ============================================
+   DISTRIBUTION FORM
+   ============================================ */
 .distribute-item {
     display: flex;
     align-items: center;
@@ -177,8 +248,76 @@ button:hover {
 
 .distribute-item label {
     flex: 1;
+    font-weight: 500;
 }
 
 .distribute-item input {
     width: 100px;
+    min-width: 100px;
+}
+
+.distribute-item span {
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .form {
+        flex-direction: column;
+    }
+
+    input,
+    select {
+        min-width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .envelope-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .envelope-actions {
+        flex-direction: column;
+    }
+
+    .envelope-actions input,
+    .envelope-actions button {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.close:focus {
+    outline: 2px solid #000;
+    outline-offset: 2px;
 }

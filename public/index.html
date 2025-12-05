@@ -8,53 +8,84 @@
 </head>
 <body>
     <div class="container">
-        <h1>💰 Personal Budget Manager</h1>
+        <!-- Header -->
+        <header>
+            <h1>💰 Personal Budget Manager</h1>
+        </header>
         
-        <div class="total-budget">
+        <!-- Total Budget Display -->
+        <section class="total-budget">
             <h2>Total Budget: $<span id="totalBudget">0.00</span></h2>
-        </div>
+        </section>
 
-        <div class="section">
+        <!-- Create New Envelope Section -->
+        <section class="section">
             <h3>Create New Envelope</h3>
             <div class="form">
-                <input type="text" id="envelopeTitle" placeholder="Envelope Title">
-                <input type="number" id="envelopeBudget" placeholder="Budget Amount" min="0" step="0.01">
+                <input 
+                    type="text" 
+                    id="envelopeTitle" 
+                    placeholder="Envelope Title"
+                    aria-label="Envelope Title">
+                <input 
+                    type="number" 
+                    id="envelopeBudget" 
+                    placeholder="Budget Amount" 
+                    min="0" 
+                    step="0.01"
+                    aria-label="Budget Amount">
                 <button onclick="createEnvelope()">Create Envelope</button>
             </div>
-        </div>
+        </section>
 
-        <div class="section">
+        <!-- Transfer Between Envelopes Section -->
+        <section class="section">
             <h3>Transfer Between Envelopes</h3>
             <div class="form">
-                <select id="transferFrom">
+                <select id="transferFrom" aria-label="Source Envelope">
                     <option value="">From Envelope</option>
                 </select>
-                <select id="transferTo">
+                <select id="transferTo" aria-label="Destination Envelope">
                     <option value="">To Envelope</option>
                 </select>
-                <input type="number" id="transferAmount" placeholder="Amount" min="0" step="0.01">
+                <input 
+                    type="number" 
+                    id="transferAmount" 
+                    placeholder="Amount" 
+                    min="0" 
+                    step="0.01"
+                    aria-label="Transfer Amount">
                 <button onclick="transferBetweenEnvelopes()">Transfer</button>
             </div>
-        </div>
+        </section>
 
-        <div class="section">
+        <!-- Distribute Amount Section -->
+        <section class="section">
             <h3>Distribute Amount</h3>
             <div class="form">
-                <input type="number" id="distributeAmount" placeholder="Amount to Distribute" min="0" step="0.01">
+                <input 
+                    type="number" 
+                    id="distributeAmount" 
+                    placeholder="Amount to Distribute" 
+                    min="0" 
+                    step="0.01"
+                    aria-label="Amount to Distribute">
                 <button onclick="showDistributeModal()">Distribute</button>
             </div>
-        </div>
+        </section>
 
-        <div class="section">
+        <!-- Envelopes List Section -->
+        <section class="section">
             <h3>Your Envelopes</h3>
             <div id="envelopesList"></div>
-        </div>
+        </section>
     </div>
 
-    <div id="distributeModal" class="modal">
+    <!-- Distribution Modal -->
+    <div id="distributeModal" class="modal" role="dialog" aria-labelledby="modalTitle">
         <div class="modal-content">
-            <span class="close" onclick="closeDistributeModal()">&times;</span>
-            <h3>Distribute Amount</h3>
+            <span class="close" onclick="closeDistributeModal()" aria-label="Close">&times;</span>
+            <h3 id="modalTitle">Distribute Amount</h3>
             <div id="distributeForm"></div>
             <button onclick="distributeAmount()">Confirm Distribution</button>
         </div>
