@@ -2,18 +2,20 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Middleware to parse JSON
+// Middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
 app.use(express.json());
+app.use(express.static('public'));
 
 // Global variables
 let envelopes = [];
 let totalBudget = 0;
 let nextId = 1;
-
-// Basic route
-app.get('/', (req, res) => {
-    res.send('Hello, World');
-});
 
 // GET endpoint to retrieve all envelopes
 app.get('/envelopes', (req, res) => {
@@ -225,6 +227,60 @@ app.post('/envelopes/transfer/:from/:to', (req, res) => {
         message: 'Transfer successful',
         from: fromEnvelope,
         to: toEnvelope
+    });
+});
+
+// POST endpoint to distribute amount across multiple envelopes
+app.post('/envelopes/distribute', (req, res) => {
+    const { amount, distributions } = req.body;
+
+    // Validate amount
+    if (amount === undefined) {
+        return res.status(400).json({ error: 'Amount is required' });
+    }
+
+    if (typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    // Validate distributions array
+    if (!Array.isArray(distributions) || distributions.length === 0) {
+        return res.status(400).json({ error: 'Distributions array is required' });
+    }
+
+    // Validate percentages sum to 100
+    const totalPercentage = distributions.reduce((sum, dist) => sum + (dist.percentage || 0), 0);
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+        return res.status(400).json({ error: 'Percentages must sum to 100' });
+    }
+
+    const results = [];
+
+    // Distribute amount to each envelope
+    for (const dist of distributions) {
+        const envelope = envelopes.find(env => env.id === dist.id);
+
+        if (!envelope) {
+            return res.status(404).json({ error: `Envelope with ID ${dist.id} not found` });
+        }
+
+        const distributedAmount = (amount * dist.percentage) / 100;
+        envelope.budget += distributedAmount;
+
+        results.push({
+            id: envelope.id,
+            title: envelope.title,
+            addedAmount: distributedAmount,
+            newBudget: envelope.budget
+        });
+    }
+
+    totalBudget += amount;
+
+    res.status(200).json({
+        message: 'Amount distributed successfully',
+        totalDistributed: amount,
+        distributions: results
     });
 });
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Budget - Envelope Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Personal Budget Manager</h1>
+        
+        <div class="total-budget">
+            <h2>Total Budget: $<span id="totalBudget">0.00</span></h2>
+        </div>
+
+        <div class="section">
+            <h3>Create New Envelope</h3>
+            <div class="form">
+                <input type="text" id="envelopeTitle" placeholder="Envelope Title">
+                <input type="number" id="envelopeBudget" placeholder="Budget Amount" min="0" step="0.01">
+                <button onclick="createEnvelope()">Create Envelope</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Transfer Between Envelopes</h3>
+            <div class="form">
+                <select id="transferFrom">
+                    <option value="">From Envelope</option>
+                </select>
+                <select id="transferTo">
+                    <option value="">To Envelope</option>
+                </select>
+                <input type="number" id="transferAmount" placeholder="Amount" min="0" step="0.01">
+                <button onclick="transferBetweenEnvelopes()">Transfer</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Distribute Amount</h3>
+            <div class="form">
+                <input type="number" id="distributeAmount" placeholder="Amount to Distribute" min="0" step="0.01">
+                <button onclick="showDistributeModal()">Distribute</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Your Envelopes</h3>
+            <div id="envelopesList"></div>
+        </div>
+    </div>
+
+    <div id="distributeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDistributeModal()">&times;</span>
+            <h3>Distribute Amount</h3>
+            <div id="distributeForm"></div>
+            <button onclick="distributeAmount()">Confirm Distribution</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
