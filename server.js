@@ -149,6 +149,31 @@ app.post('/envelopes/:id/subtract', (req, res) => {
     res.status(200).json(envelope);
 });
 
+// DELETE endpoint to remove a specific envelope
+app.delete('/envelopes/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    // Validate ID is a number
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Find envelope by ID
+    const envelope = envelopes.find(env => env.id === id);
+
+    if (!envelope) {
+        return res.status(404).json({ error: 'Envelope not found' });
+    }
+
+    // Remove envelope from array using filter
+    envelopes = envelopes.filter(env => env.id !== id);
+
+    // Update total budget
+    totalBudget -= envelope.budget;
+
+    res.status(200).json({ message: 'Envelope deleted successfully', envelope: envelope });
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
